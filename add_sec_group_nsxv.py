@@ -1,6 +1,6 @@
 
-# This program get a .txt file with security group names and create them in nsx-v environment.
-# Written by Ishak Shahak at 3/12/19 as part of pool microsegmentation project.
+# This script recive a .txt file with security group names and create them in nsx-v environment.
+# Written by Ishak Shahak at 3/12/19
 
 import requests
 import sys
