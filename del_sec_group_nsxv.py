@@ -1,7 +1,7 @@
-# This program get a .txt file with security group object ID's and delete them in nsx-v environment.
+# This script recive a .txt file with security group object ID's and delete them in nsx-v environment.
 # To get all security groups ID's you can use REST API call below: GET https://192.168.41.70/api/2.0/services/securitygroup/scope/universalroot-0
 # If you use global security group (not universial object in cross vCnter NSX, use "globalroot-0" instead of "universialroot-0".
-# Written by Ishak Shahak at 3/12/19 as part of pool microsegmentation project.
+# Written by Ishak Shahak at 3/12/19.
 
 import requests
 import sys
