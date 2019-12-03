@@ -14,8 +14,10 @@ if not sys.warnoptions:
 # Open the text file and read it.
 securityGroupNames = open('sg.txt', 'r')
 
+nsxManager = input("Please enter NSX manager IP address: ")
+
 # REST API calls.
-url = "https://192.168.41.70/api/2.0/services/securitygroup/universalroot-0"
+url = "https://" + nsxManager + "/api/2.0/services/securitygroup/universalroot-0"
 headers = {
     'Content-Type': "application/xml",
     'Authorization': "Basic YWRtaW46UG9vbDEyIzE=",
@@ -23,7 +25,7 @@ headers = {
     'Accept': "*/*",
     'Cache-Control': "no-cache",
     'Postman-Token': "9e79be41-6df0-42dc-9c00-c21e6df32026,67c09a82-de33-45f7-8a9b-f2885c85c6b8",
-    'Host': "192.168.41.70",
+    'Host': nsxManager,
     'Accept-Encoding': "gzip, deflate",
     'Content-Length': "612",
     'Connection': "keep-alive",
@@ -36,4 +38,6 @@ for securityGroupName in securityGroupNames:
     if str(response.status_code) == "201":
         time.sleep(1)
         print ("Security group " + securityGroupName + " added!!")
+    else:
+        print(response.text)
     
