@@ -15,6 +15,7 @@ if not sys.warnoptions:
 # Open the text file and read it.
 idsFile = open('sg_id.txt', 'r')
 
+nsxManager = input("Please enter NSX manager IP address: ")
 
 # REST API calls.
 payload = ""
@@ -24,7 +25,7 @@ headers = {
     'Accept': "*/*",
     'Cache-Control': "no-cache",
     'Postman-Token': "de051c58-b242-431c-9458-7042a324f016,38952351-9012-43b9-88c1-d79c7468ed9a",
-    'Host': "192.168.41.70",
+    'Host': nsxManager,
     'Accept-Encoding': "gzip, deflate",
     'Content-Length': "0",
     'Connection': "keep-alive",
@@ -33,8 +34,10 @@ headers = {
     
 for id in idsFile:
     id = id.replace("\n", "")
-    url = "https://192.168.41.70/api/2.0/services/securitygroup/" + id
+    url = "https://" + nsxManager + "/api/2.0/services/securitygroup/" + id
     response = requests.request("DELETE", url, data=payload, headers=headers, verify=False)
     if str(response.status_code) == "200" or str(response.status_code) == "204":
         time.sleep(1)
         print ("Security group with ID: " + id + " deleted!!")
+    else:
+        print (response.text)
