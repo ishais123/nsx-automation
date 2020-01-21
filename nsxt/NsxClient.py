@@ -27,40 +27,28 @@ OS_FILE = "os.txt"
 ADD_GROUP_URI = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
 
-class NSX_CLIENT():
+
+class NsxClient():
+
 	def __init__(self, nsx_manager):
 		self.session = requests.Session()
 		self.nsx_manager = nsx_manager
 
-	
+		self.envFile = open(ENV_FILE, "r")
+		self.rEnvFile = self.envFile.readlines()
+		self.appFile = open(APP_FILE, "r")
+		self.rAppFile = self.appFile.readlines()
+		self.osFile = open(OS_FILE, "r")
+		self.rOsFile = self.osFile.readlines()
+
 	def authorize(self, username, password):
 		self.username = username
 		self.password = password
 		url = f"https://{self.nsx_manager}/{AUTHORIZATION_URI}"
 		data = {"j_username": self.username, "j_password": self.password}
 		response = self.session.request("POST", url, data=data, verify=False)
-		print(response.headers)
 		self.xsrf_token = response.headers['X-XSRF-TOKEN']
-	
-	def add_security_group(self):
-		# Read the TXT files
-		envFile = open(ENV_FILE, "r")
-		rEnvFile = envFile.readlines()
-		appFile = open(APP_FILE, "r")
-		rAppFile = appFile.readlines()
-		osFile = open(OS_FILE, "r")
-		rOsFile = osFile.readlines()
-
-		print ("")
-		print("Strating to adding security groups...")
-		print("")
-		print("---------")
-		print("")
-		time.sleep(2)
-
-		# REST API calls
-		url = f"https://{self.nsx_manager}/{ADD_GROUP_URI}"
-		headers = {
+		self.headers = {
 			'Content-Type': "application/json",
 			'User-Agent': "PostmanRuntime/7.19.0",
 			'Accept': "*/*",
@@ -72,12 +60,25 @@ class NSX_CLIENT():
 			'cache-control': "no-cache",
 			'X-XSRF-TOKEN': self.xsrf_token
 		}
-		
-		for x in range(0,len(rAppFile)):
 
-			strEnv = str(rEnvFile[x]).replace("\n", "")
-			strApp = str(rAppFile[x]).replace("\n", "")
-			strOs = str(rOsFile[x]).replace("\n", "")
+	def add_security_group(self):
+		# Read the TXT files
+
+		print ("")
+		print("Strating to adding security groups...")
+		print("")
+		print("---------")
+		print("")
+		time.sleep(2)
+
+		# REST API calls
+		url = f"https://{self.nsx_manager}/{ADD_GROUP_URI}"
+
+		for x in range(0,len(self.rAppFile)):
+
+			strEnv = str(self.rEnvFile[x]).replace("\n", "")
+			strApp = str(self.rAppFile[x]).replace("\n", "")
+			strOs = str(self.rOsFile[x]).replace("\n", "")
 			displayName = f"custom-{strEnv}-{strApp}-{strOs}"
 			
 			payload = {
@@ -90,25 +91,25 @@ class NSX_CLIENT():
 								"resource_type": "NSGroupTagExpression",
 								"target_type": "VirtualMachine",
 								"scope": "env",
-								"tag": rEnvFile[x]
+								"tag": self.rEnvFile[x]
 							},
 							{
 								"resource_type": "NSGroupTagExpression",
 								"target_type": "VirtualMachine",
 								"scope": "app",
-								"tag": rAppFile[x]
+								"tag": self.rAppFile[x]
 							},
 							{
 								"resource_type": "NSGroupTagExpression",
 								"target_type": "VirtualMachine",
 								"scope": "os",
-								"tag": rOsFile[x]
+								"tag": self.rOsFile[x]
 							}
 						]
 					}
 				]
 			}
-			response = self.session.request("POST", url, data=json.dumps(payload), headers=headers, verify=False)
+			response = self.session.request("POST", url, data=json.dumps(payload), headers=self.headers, verify=False)
 			
 			if str(response.status_code) == "201":
 				time.sleep(1)
@@ -123,6 +124,40 @@ class NSX_CLIENT():
 			print("")
 			print ("All Security groups added.")
 
+	def get_vm_ids(self):
+		vm_ids = []
+		with open("vms.txt", 'r') as vms_file:
+			vms = vms_file.readlines()
+
+		for vm in vms:
+			strvm = str(vm).replace("\n", "")
+			url = f"https://{self.nsx_manager}/api/v1/fabric/virtual-machines?display_name={strvm}"
+			payload = {}
+			response = self.session.request("GET", url, headers=self.headers, data=json.dumps(payload), verify=False)
+			to_json = response.json()
+			results = to_json.get("results")
+			vm_id = results[0].get("external_id")
+			vm_ids.append(vm_id)
+
+		return vm_ids
+
+	def add_tags(self):
+		vm_ids = self.get_vm_ids()
+		for vm_id in vm_ids:
+			url = f"https://{self.nsx_manager}/api/v1/fabric/virtual-machines?action=update_tags"
+			for x in range(0, len(self.rAppFile)):
+				payload = {
+					"external_id": f"{vm_id}",
+					"tags": [
+						{"scope": "env", "tag": self.rEnvFile[x]},
+						{"scope": "app", "tag": self.rAppFile[x]},
+						{"scope": "os", "tag": self.rOsFile[x]}
+					]
+				}
+				response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
+			if str(response.status_code) == "204":
+				print("All tags added!!!")
+
 
 def parse_args():
 	parser = argparse.ArgumentParser(description='Enter IP, Username and Password of NSX Node.')
@@ -135,9 +170,23 @@ def parse_args():
 
 def main():
 	args = parse_args()
-	nsx_client = NSX_CLIENT(args.ip)
+	nsx_client = NsxClient(args.ip)
 	nsx_client.authorize(args.username, args.password)
-	nsx_client.add_security_group()
+	print("-----Hello and welcome to AutoNSX tool-----")
+	oper = int(input("\nPlease Choose the operation:\n"
+							 "1. Add Security groups\n"
+							 "2. Add security tags\n"
+							 "3. Add Segments\n"))
+	if oper not in range(1, 3):
+		exit_status = 1
+		print("Please choose valid operation")
+		return exit_status
+	if oper == 1:
+		nsx_client.add_security_group()
+	if oper == 2:
+		nsx_client.add_tags()
+	if oper == 3:
+		print("sorry but automation not finish currently") # will be nsx_client.add_segment()
 
 
 if __name__ == '__main__':

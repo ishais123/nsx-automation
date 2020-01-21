@@ -10,7 +10,7 @@
 	os.txt context --> linux
   The script will create a securiy group named "custom-prod-ishaiApp-linux" with 3 tag crateria (env: prod, app: ishaiApp and os: linux)
   To run the script please use syntax below:
-  python addGroup_nsxt.py -i [nsx_manager_ip] -u admin -p [nsx_manager_password]
+  python NsxClient.py -i [nsx_manager_ip] -u admin -p [nsx_manager_password]
 """
 # Wrriten by Ishai Shahak at 12/4/19
 
