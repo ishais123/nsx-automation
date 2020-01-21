@@ -26,6 +26,7 @@ OS_FILE = "os.txt"
 
 ADD_GROUP_URI = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
+ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
 
 class NsxClient():
@@ -144,7 +145,7 @@ class NsxClient():
 	def add_tags(self):
 		vm_ids = self.get_vm_ids()
 		for vm_id in vm_ids:
-			url = f"https://{self.nsx_manager}/api/v1/fabric/virtual-machines?action=update_tags"
+			url = f"https://{self.nsx_manager}/{ADD_TAGS_URI}"
 			for x in range(0, len(self.rAppFile)):
 				payload = {
 					"external_id": f"{vm_id}",
