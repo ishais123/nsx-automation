@@ -144,20 +144,23 @@ class NsxClient():
 
 	def add_tags(self):
 		vm_ids = self.get_vm_ids()
+		seq = int(input("Please enter the squence number of SG group that you want to add your VM's:  "))
+		count = 0
 		for vm_id in vm_ids:
 			url = f"https://{self.nsx_manager}/{ADD_TAGS_URI}"
-			for x in range(0, len(self.rAppFile)):
-				payload = {
-					"external_id": f"{vm_id}",
-					"tags": [
-						{"scope": "env", "tag": self.rEnvFile[x]},
-						{"scope": "app", "tag": self.rAppFile[x]},
-						{"scope": "os", "tag": self.rOsFile[x]}
-					]
-				}
-				response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
-			if str(response.status_code) == "204":
-				print("All tags added!!!")
+			payload = {
+				"external_id": f"{vm_id}",
+				"tags": [
+					{"scope": "env", "tag": self.rEnvFile[seq-1]},
+					{"scope": "app", "tag": self.rAppFile[seq-1]},
+					{"scope": "os", "tag": self.rOsFile[seq-1]}
+				]
+			}
+			response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
+			if str(response.status_code) != "204":
+				count = count + 1
+		if count == 0:
+			print("All tags added!!!")
 
 
 def parse_args():
