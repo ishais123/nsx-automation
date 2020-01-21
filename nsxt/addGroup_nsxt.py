@@ -31,7 +31,7 @@ class NSX_CLIENT():
 	def __init__(self, nsx_manager):
 		self.session = requests.Session()
 		self.nsx_manager = nsx_manager
-		print("test")
+
 	
 	def authorize(self, username, password):
 		self.username = username
