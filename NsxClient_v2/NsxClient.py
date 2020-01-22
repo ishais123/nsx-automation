@@ -1,16 +1,17 @@
-# This script recive 3 TXT files : env.txt, app.txt and os.txt.
+# This Client receive CSV file (mapping.csv) and TXT file (vms.txt)
 # The files have to be in the same directory as the script.
 # Files should contain the tags and scopes information for the security group.
-# The script create a security groups in NSX-T base on the information that the files contain.
+
 
 """
- Example : 
-	env.txt context --> prod
-	app.txt context --> ishaiApp
-	os.txt context --> linux
-  The script will create a securiy group named "custom-prod-ishaiApp-linux" with 3 tag crateria (env: prod, app: ishaiApp and os: linux)
+Example :
+env --> prod
+app --> ishaiApp
+os --> linux
+The Client will create a securiy group named "custom-prod-ishaiApp-linux" with 3 tag crateria (env: prod, app: ishaiApp and os: linux)
 """
-# Wrriten by Ishai Shahak at 12/4/19
+# Writen by Ishai Shahak at 12/4/19
+# Updated by Ishai Shahak at 22/01/20
 
 import requests
 import json
@@ -29,7 +30,7 @@ AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
 
-class NsxClient():
+class NsxClient:
 
 	def __init__(self, nsx_manager):
 		self.session = requests.Session()
