@@ -17,12 +17,12 @@ import json
 import time
 from IPython import embed
 import argparse
+import pandas
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
-ENV_FILE = "env.txt"
-APP_FILE = "app.txt"
-OS_FILE = "os.txt"
+MAPPING_FILE = 'mapping.csv'
+VMS_FILE = 'vms.txt'
 
 ADD_GROUP_URI = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
@@ -34,13 +34,7 @@ class NsxClient():
 	def __init__(self, nsx_manager):
 		self.session = requests.Session()
 		self.nsx_manager = nsx_manager
-
-		self.envFile = open(ENV_FILE, "r")
-		self.rEnvFile = self.envFile.readlines()
-		self.appFile = open(APP_FILE, "r")
-		self.rAppFile = self.appFile.readlines()
-		self.osFile = open(OS_FILE, "r")
-		self.rOsFile = self.osFile.readlines()
+		self.mapping = pandas.read_csv(MAPPING_FILE, sep='\t')
 
 	def authorize(self, username, password):
 		self.username = username
@@ -63,10 +57,8 @@ class NsxClient():
 		}
 
 	def add_security_group(self):
-		# Read the TXT files
-
 		print ("")
-		print("Strating to adding security groups...")
+		print("Starting to adding security groups...")
 		print("")
 		print("---------")
 		print("")
@@ -75,15 +67,14 @@ class NsxClient():
 		# REST API calls
 		url = f"https://{self.nsx_manager}/{ADD_GROUP_URI}"
 
-		for x in range(0,len(self.rAppFile)):
-
-			strEnv = str(self.rEnvFile[x]).replace("\n", "")
-			strApp = str(self.rAppFile[x]).replace("\n", "")
-			strOs = str(self.rOsFile[x]).replace("\n", "")
-			displayName = f"custom-{strEnv}-{strApp}-{strOs}"
+		for x in range(0, len(self.mapping['ENV'])):
+			env_tag = self.mapping['ENV'][x]
+			app_tag = self.mapping['APP'][x]
+			os_tag = self.mapping['OS'][x]
+			display_name = f"custom-{env_tag}-{app_tag}-{os_tag}"
 			
 			payload = {
-				"display_name": displayName,
+				"display_name": display_name,
 				"membership_criteria": [
 					{
 						"resource_type": "NSGroupComplexExpression",
@@ -92,19 +83,19 @@ class NsxClient():
 								"resource_type": "NSGroupTagExpression",
 								"target_type": "VirtualMachine",
 								"scope": "env",
-								"tag": self.rEnvFile[x]
+								"tag": env_tag
 							},
 							{
 								"resource_type": "NSGroupTagExpression",
 								"target_type": "VirtualMachine",
 								"scope": "app",
-								"tag": self.rAppFile[x]
+								"tag": app_tag
 							},
 							{
 								"resource_type": "NSGroupTagExpression",
 								"target_type": "VirtualMachine",
 								"scope": "os",
-								"tag": self.rOsFile[x]
+								"tag": os_tag
 							}
 						]
 					}
@@ -114,7 +105,7 @@ class NsxClient():
 			
 			if str(response.status_code) == "201":
 				time.sleep(1)
-				print ("Security group " + displayName + " added.")
+				print("Security group " + display_name + " added.")
 			else:
 				print(response.text)
 				
@@ -127,12 +118,12 @@ class NsxClient():
 
 	def get_vm_ids(self):
 		vm_ids = []
-		with open("vms.txt", 'r') as vms_file:
+		with open(VMS_FILE, 'r') as vms_file:
 			vms = vms_file.readlines()
 
 		for vm in vms:
-			strvm = str(vm).replace("\n", "")
-			url = f"https://{self.nsx_manager}/api/v1/fabric/virtual-machines?display_name={strvm}"
+			str_vm = str(vm).replace("\n", "")
+			url = f"https://{self.nsx_manager}/api/v1/fabric/virtual-machines?display_name={str_vm}"
 			payload = {}
 			response = self.session.request("GET", url, headers=self.headers, data=json.dumps(payload), verify=False)
 			to_json = response.json()
@@ -151,15 +142,16 @@ class NsxClient():
 			payload = {
 				"external_id": f"{vm_id}",
 				"tags": [
-					{"scope": "env", "tag": self.rEnvFile[seq-1]},
-					{"scope": "app", "tag": self.rAppFile[seq-1]},
-					{"scope": "os", "tag": self.rOsFile[seq-1]}
+					{"scope": "env", "tag": self.mapping['ENV'][seq-1]},
+					{"scope": "app", "tag": self.mapping['APP'][seq-1]},
+					{"scope": "os", "tag": self.mapping['OS'][seq-1]}
 				]
 			}
 			response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
 			if str(response.status_code) != "204":
 				count = count + 1
 		if count == 0:
+			time.sleep(2)
 			print("All tags added!!!")
 
 
@@ -181,7 +173,7 @@ def main():
 							 "1. Add Security groups\n"
 							 "2. Add security tags\n"
 							 "3. Add Segments\n"))
-	if oper not in range(1, 3):
+	if oper not in range(1, 4):
 		exit_status = 1
 		print("Please choose valid operation")
 		return exit_status
