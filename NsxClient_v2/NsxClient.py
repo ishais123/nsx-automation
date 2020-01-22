@@ -35,7 +35,7 @@ class NsxClient:
 	def __init__(self, nsx_manager):
 		self.session = requests.Session()
 		self.nsx_manager = nsx_manager
-		self.mapping = pandas.read_csv(MAPPING_FILE, sep='\t')
+		self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
 
 	def authorize(self, username, password):
 		self.username = username
