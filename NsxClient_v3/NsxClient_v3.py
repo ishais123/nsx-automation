@@ -26,6 +26,7 @@ MAPPING_FILE = 'mapping.csv'
 VMS_FILE = 'vms.txt'
 
 ADD_GROUP_URI = "api/v1/ns-groups"
+CHECK_SG_EXIST = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
@@ -72,6 +73,20 @@ class NsxClient:
 
         return vm_ids
 
+    def check_sg_exist(self, sg_name):
+        sg_names = []
+        url = f"https://{self.nsx_manager}/{CHECK_SG_EXIST}"
+        payload = {}
+        response = self.session.request("GET", url, headers=self.headers, data=json.dumps(payload), verify=False)
+        results = response.json().get("results")
+        for x in range(0, len(results)-1):
+            name = results[x].get("display_name")
+            sg_names.append(name)
+        if sg_name in sg_names:
+            return True
+        else:
+            return False
+
     def add_security_group(self):
         print("")
         print("Starting to adding security groups...")
@@ -88,49 +103,51 @@ class NsxClient:
             app_tag = self.mapping['APP'][x]
             os_tag = self.mapping['OS'][x]
             display_name = f"custom-{env_tag}-{app_tag}-{os_tag}"
+            if not self.check_sg_exist(display_name):
+                payload = {
+                    "display_name": display_name,
+                    "membership_criteria": [
+                        {
+                            "resource_type": "NSGroupComplexExpression",
+                            "expressions": [
+                                {
+                                    "resource_type": "NSGroupTagExpression",
+                                    "target_type": "VirtualMachine",
+                                    "scope": "env",
+                                    "tag": env_tag
+                                },
+                                {
+                                    "resource_type": "NSGroupTagExpression",
+                                    "target_type": "VirtualMachine",
+                                    "scope": "app",
+                                    "tag": app_tag
+                                },
+                                {
+                                    "resource_type": "NSGroupTagExpression",
+                                    "target_type": "VirtualMachine",
+                                    "scope": "os",
+                                    "tag": os_tag
+                                }
+                            ]
+                        }
+                    ]
+                }
+                response = self.session.request("POST", url, data=json.dumps(payload), headers=self.headers, verify=False)
 
-            payload = {
-                "display_name": display_name,
-                "membership_criteria": [
-                    {
-                        "resource_type": "NSGroupComplexExpression",
-                        "expressions": [
-                            {
-                                "resource_type": "NSGroupTagExpression",
-                                "target_type": "VirtualMachine",
-                                "scope": "env",
-                                "tag": env_tag
-                            },
-                            {
-                                "resource_type": "NSGroupTagExpression",
-                                "target_type": "VirtualMachine",
-                                "scope": "app",
-                                "tag": app_tag
-                            },
-                            {
-                                "resource_type": "NSGroupTagExpression",
-                                "target_type": "VirtualMachine",
-                                "scope": "os",
-                                "tag": os_tag
-                            }
-                        ]
-                    }
-                ]
-            }
-            response = self.session.request("POST", url, data=json.dumps(payload), headers=self.headers, verify=False)
-
-            if str(response.status_code) == "201":
-                time.sleep(1)
-                print("Security group " + display_name + " added.")
+                if str(response.status_code) == "201":
+                    time.sleep(1)
+                    print("Security group " + display_name + " added.")
+                else:
+                    print(response.text)
             else:
-                print(response.text)
-
-        if str(response.status_code) == "201":
-            time.sleep(2)
-            print("")
-            print("---------")
-            print("")
-            print("All Security groups added.")
+                print(f"Security group {display_name} already exists")
+                continue
+        # if str(response.status_code) == "201":
+        #     time.sleep(2)
+        #     print("")
+        #     print("---------")
+        #     print("")
+        #     print("All Security groups added.")
 
     def add_tags(self):
         vm_ids = self.get_vm_ids()
