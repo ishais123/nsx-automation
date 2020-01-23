@@ -1,7 +1,7 @@
 NsxClient Tool
 ==============
 
-Python tool for automatic Security groups and tags creation, This tool leveraging NSX-T REST API.
+Python tool for automatic Security groups and tags creation, This tool leveraging NSX-T 2.5 REST API.
 
 ### NOTE:
 
