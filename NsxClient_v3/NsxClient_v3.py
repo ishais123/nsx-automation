@@ -19,6 +19,8 @@ import time
 from IPython import embed
 import argparse
 import pandas
+from colorama import init
+from termcolor import colored
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
@@ -29,6 +31,8 @@ ADD_GROUP_URI = "api/v1/ns-groups"
 CHECK_SG_EXIST = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
+
+init() # colors for prints (Mandatory!!)
 
 
 class NsxClient:
@@ -88,13 +92,10 @@ class NsxClient:
             return False
 
     def add_security_group(self):
-        print("")
-        print("Starting to adding security groups...")
-        print("")
-        print("---------")
-        print("")
+        count = 0
+        print(colored("\nStarting to add security groups...", 'yellow', attrs=['bold']))
+        print("-----------")
         time.sleep(2)
-
         # REST API calls
         url = f"https://{self.nsx_manager}/{ADD_GROUP_URI}"
 
@@ -135,25 +136,29 @@ class NsxClient:
                 response = self.session.request("POST", url, data=json.dumps(payload), headers=self.headers, verify=False)
 
                 if str(response.status_code) == "201":
+                    count = count + 1
                     time.sleep(1)
-                    print("Security group " + display_name + " added.")
+                    print(f"Security group {display_name} added.")
                 else:
                     print(response.text)
             else:
                 print(f"Security group {display_name} already exists")
                 continue
-        # if str(response.status_code) == "201":
-        #     time.sleep(2)
-        #     print("")
-        #     print("---------")
-        #     print("")
-        #     print("All Security groups added.")
+        if count == len(self.mapping['VM']):
+            time.sleep(2)
+            print("-----------")
+            print(colored("\nAll Security groups added.", 'yellow', attrs=['bold']))
 
     def add_tags(self):
         vm_ids = self.get_vm_ids()
         count = 0
+        print(colored("\nStarting to add security tags...", 'yellow', attrs=['bold']))
+        print("-----------")
+        time.sleep(2)
+
         for x in range(0, len(self.mapping['VM'])):
             url = f"https://{self.nsx_manager}/{ADD_TAGS_URI}"
+
             payload = {
                 "external_id": f"{vm_ids[x]}",
                 "tags": [
@@ -163,11 +168,13 @@ class NsxClient:
                 ]
             }
             response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
-            if str(response.status_code) != "204":
+            if str(response.status_code) == "204":
                 count = count + 1
-        if count == 0:
+                print(f"Tags added to VM {self.mapping['VM'][x]}")
+        if count == len(self.mapping['VM']):
             time.sleep(2)
-            print("All tags added!!!")
+            print("-----------")
+            print(colored("All Tags added.", 'yellow', attrs=['bold']))
 
 
 def parse_args():
