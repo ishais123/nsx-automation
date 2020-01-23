@@ -1,7 +1,9 @@
-Scripts to automate create and delete security groups in NSX-V
+Python tool for automatic Security groups and tags creation
+This tool leveraging NSX-T REST API.
+This tool get a CSV file and create the relevant objects according to it.
+Put the "mapping.csv" in the sane directory as the tool file.
 
-addGroup_nsxt.py is a new script to create security group in nsx-t, to run it please see the example into the code.
+To run this tool please use command structure below:
 
+python NsxClient_v3.py -i [nsx_manager_ip] -u [nsx_manager_user] -p [nsx_manager_password]
 
-To run the tool please use syntax below:
-python NsxClient.py -i [nsx_manager_ip] -u admin -p [nsx_manager_password]
