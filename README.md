@@ -1,5 +1,7 @@
-Python tool for automatic Security groups and tags creation
-This tool leveraging NSX-T REST API.
+NsxClient Tool
+==============
+
+Python tool for automatic Security groups and tags creation, This tool leveraging NSX-T REST API.
 
 This tool get a CSV file and create the relevant objects according to it.
 
