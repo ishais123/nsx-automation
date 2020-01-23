@@ -3,6 +3,8 @@ NsxClient Tool
 
 Python tool for automatic security groups and security tags creation, This tool leveraging NSX-T 2.5 REST API.
 
+It can be very helpful tool to automate the security fabric phase in NSX-T MicroSegmentation projects.
+
 ### NOTE:
 
 This tool get a CSV file and create the relevant objects according to it.
