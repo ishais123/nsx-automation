@@ -7,7 +7,7 @@ Python tool for automatic Security groups and tags creation, This tool leveragin
 
 This tool get a CSV file and create the relevant objects according to it.
 
-Put the "mapping.csv" in the sane directory as the tool file. (Example CSV file exists in "NsxClient_v3" directory)
+Put the "mapping.csv" in the same directory as the tool file. (Example CSV file exists in "NsxClient_v3" directory)
 
 ### HOW TO:
 
