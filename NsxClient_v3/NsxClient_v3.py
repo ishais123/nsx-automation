@@ -20,6 +20,7 @@ import argparse
 import pandas
 from colorama import init
 from termcolor import colored
+import pyfiglet
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
@@ -32,7 +33,9 @@ AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
 init() # colors for prints (Mandatory!!)
-
+font = pyfiglet.Figlet(font='standard')
+welcome_message = font.renderText("Hello to NsxClient!!")
+print(welcome_message)
 
 class NsxClient:
 
@@ -92,7 +95,7 @@ class NsxClient:
 
     def add_security_group(self):
         count = 0
-        print(colored("\nStarting to add security groups...", 'yellow', attrs=['bold']))
+        print(colored("Starting to add security groups...", 'yellow', attrs=['bold']))
         print("-----------")
         time.sleep(2)
         # REST API calls
@@ -141,12 +144,12 @@ class NsxClient:
                 else:
                     print(response.text)
             else:
-                print(f"Security group {display_name} already exists")
+                print(colored(f"Security group {display_name} already exists", 'red'))
                 continue
         if count == len(self.mapping['VM']):
             time.sleep(2)
             print("-----------")
-            print(colored("\nAll Security groups added.", 'yellow', attrs=['bold']))
+            print(colored("\nAll Security groups added.", 'green', attrs=['bold']))
 
     def add_tags(self):
         vm_ids = self.get_vm_ids()
@@ -173,7 +176,7 @@ class NsxClient:
         if count == len(self.mapping['VM']):
             time.sleep(2)
             print("-----------")
-            print(colored("All Tags added.", 'yellow', attrs=['bold']))
+            print(colored("All Tags added.", 'green', attrs=['bold']))
 
 
 def parse_args():
