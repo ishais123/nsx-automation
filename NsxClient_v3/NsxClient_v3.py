@@ -16,7 +16,6 @@ The Client will create a securiy group named "custom-prod-ishaiApp-linux" with 3
 import requests
 import json
 import time
-from IPython import embed
 import argparse
 import pandas
 from colorama import init
