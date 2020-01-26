@@ -9,6 +9,7 @@ RUN apt-get update; apt-get upgrade; apt-get install -y net-tools; apt-get insta
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1; update-alternatives --config python
 
 RUN mkdir -p nsx-automation/NsxClient_v3
+RUN mkdir /map
 
 WORKDIR /nsx-automation/NsxClient_v3
 

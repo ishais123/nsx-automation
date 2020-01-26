@@ -24,8 +24,7 @@ import pyfiglet
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
-MAPPING_FILE = 'mapping.csv'
-VMS_FILE = 'vms.txt'
+MAPPING_FILE = '/map/mapping.csv'
 
 ADD_GROUP_URI = "api/v1/ns-groups"
 CHECK_SG_EXIST = "api/v1/ns-groups"
