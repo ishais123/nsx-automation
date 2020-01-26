@@ -17,7 +17,7 @@ To run this tool please use command structure below:
 
 python NsxClient_v3.py -i [nsx_manager_ip] -u [nsx_manager_user] -p [nsx_manager_password]
 
-### DOKCER Version:
+### DOCKER Version:
 
 To run this tool as a continer please use:
 
