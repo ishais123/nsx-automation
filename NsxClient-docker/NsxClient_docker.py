@@ -42,7 +42,10 @@ class NsxClient:
     def __init__(self, nsx_manager):
         self.session = requests.Session()
         self.nsx_manager = nsx_manager
-        self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
+        try:
+            self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
+        except FileNotFoundError:
+            raise FileNotFoundError
 
     def authorize(self, username, password):
         self.username = username
@@ -196,7 +199,12 @@ def main():
     print(colored("\nPlease Enter the password of NSX-T Manager: ", 'yellow', attrs=['bold']))
     password = input()
     print("-----------")
-    nsx_client = NsxClient(ip)
+    try:
+        nsx_client = NsxClient(ip)
+    except FileNotFoundError:
+        print(colored("mapping file mot found", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
     try:
         nsx_client.authorize(username, password)
     except requests.exceptions.ConnectionError:
