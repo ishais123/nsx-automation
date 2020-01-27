@@ -191,7 +191,9 @@ def parse_args():
 
 def main():
     args = parse_args()
+    # Create NsxClient object
     nsx_client = NsxClient(args.ip)
+    # Authorization function
     try:
         nsx_client.authorize(args.username, args.password)
     except requests.exceptions.ConnectionError:
@@ -207,12 +209,14 @@ def main():
         print(colored("Please enter the NSX Manager details, use --help for help", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
+    # Security group function
     try:
         nsx_client.add_security_group(args.filepath)
     except ValueError:
         print(colored("mapping file not found", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
+    # Security tag function
     nsx_client.add_tags()
 
 
