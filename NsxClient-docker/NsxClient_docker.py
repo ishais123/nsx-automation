@@ -202,7 +202,7 @@ def main():
     try:
         nsx_client = NsxClient(ip)
     except FileNotFoundError:
-        print(colored("mapping file mot found", 'red', attrs=['bold']))
+        print(colored("mapping file not found", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
     try:

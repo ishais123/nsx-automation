@@ -42,7 +42,6 @@ class NsxClient:
     def __init__(self, nsx_manager):
         self.session = requests.Session()
         self.nsx_manager = nsx_manager
-        self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
 
     def authorize(self, username, password):
         self.username = username
@@ -94,6 +93,7 @@ class NsxClient:
             return False
 
     def add_security_group(self):
+        self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
         count = 0
         print(colored("Starting to add security groups...", 'yellow', attrs=['bold']))
         print("-----------")
@@ -191,8 +191,27 @@ def parse_args():
 def main():
     args = parse_args()
     nsx_client = NsxClient(args.ip)
-    nsx_client.authorize(args.username, args.password)
-    nsx_client.add_security_group()
+    try:
+        nsx_client.authorize(args.username, args.password)
+    except requests.exceptions.ConnectionError:
+        print(colored("You have a connection error to NSX-T manager,"
+                      " please validate you details and try again", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
+    except KeyError:
+        print(colored("Invalid user and password, Please try again.", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
+    except:
+        print(colored("Please enter the NSX Manager details, use --help for help", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
+    try:
+        nsx_client.add_security_group()
+    except FileNotFoundError:
+        print(colored("mapping file not found", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
     nsx_client.add_tags()
 
 
