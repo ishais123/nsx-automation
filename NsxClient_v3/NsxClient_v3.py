@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 # This Client receive CSV file (mapping.csv) and TXT file (vms.txt)
 # The files have to be in the same directory as the script.
 # Files should contain the tags and scopes information for the security group.
@@ -21,11 +23,13 @@ import pandas
 from colorama import init
 from termcolor import colored
 import pyfiglet
+import os
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
-MAPPING_FILE = 'mapping.csv'
-VMS_FILE = 'vms.txt'
+# make this tool executable from anywhere
+project_dir = os.path.dirname(os.path.dirname(__file__))
+os.sys.path.append(project_dir)
 
 ADD_GROUP_URI = "api/v1/ns-groups"
 CHECK_SG_EXIST = "api/v1/ns-groups"
