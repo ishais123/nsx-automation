@@ -92,10 +92,10 @@ class NsxClient:
         else:
             return False
 
-    def add_security_group(self):
-        self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
+    def add_security_group(self, filepath):
+        self.mapping = pandas.read_csv(filepath, sep=',')
         count = 0
-        print(colored("Starting to add security groups...", 'yellow', attrs=['bold']))
+        print(colored("Starting to add security groups...", 'blue', attrs=['bold']))
         print("-----------")
         time.sleep(2)
         # REST API calls
@@ -144,7 +144,7 @@ class NsxClient:
                 else:
                     print(response.text)
             else:
-                print(colored(f"Security group {display_name} already exists", 'red'))
+                print(colored(f"Security group {display_name} already exists", 'yellow', attrs=['bold']))
                 continue
         if count == len(self.mapping['VM']):
             time.sleep(2)
@@ -154,7 +154,7 @@ class NsxClient:
     def add_tags(self):
         vm_ids = self.get_vm_ids()
         count = 0
-        print(colored("\nStarting to add security tags...", 'yellow', attrs=['bold']))
+        print(colored("\nStarting to add security tags...", 'blue', attrs=['bold']))
         print("-----------")
         time.sleep(2)
 
@@ -184,6 +184,7 @@ def parse_args():
     parser.add_argument("-i", "--ip", help="IP address of the NSX Manager.")
     parser.add_argument("-u", "--username", help="Username of the NSX Manager.")
     parser.add_argument("-p", "--password", help="Passowrd of the NSX Manager.")
+    parser.add_argument("-f", "--filepath", help="mapping file path")
     args = parser.parse_args()
     return args
 
@@ -207,8 +208,8 @@ def main():
         exit_status = 1
         return exit_status
     try:
-        nsx_client.add_security_group()
-    except FileNotFoundError:
+        nsx_client.add_security_group(args.filepath)
+    except ValueError:
         print(colored("mapping file not found", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
