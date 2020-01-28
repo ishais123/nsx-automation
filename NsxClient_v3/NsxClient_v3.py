@@ -94,6 +94,7 @@ class NsxClient:
 
     def add_security_group(self, filepath):
         self.mapping = pandas.read_csv(filepath, sep=',')
+        self.sg_count = 0
         count = 0
         print(colored("Starting to add security groups...", 'blue', attrs=['bold']))
         print("-----------")
@@ -138,7 +139,7 @@ class NsxClient:
                 response = self.session.request("POST", url, data=json.dumps(payload), headers=self.headers, verify=False)
 
                 if str(response.status_code) == "201":
-                    count = count + 1
+                    self.sg_count = self.sg_count + 1
                     time.sleep(1)
                     print(f"Security group {display_name} added.")
                 else:
@@ -146,12 +147,13 @@ class NsxClient:
             else:
                 print(colored(f"Security group {display_name} already exists", 'yellow', attrs=['bold']))
                 continue
-        if count == len(self.mapping['VM']):
+        if self.sg_count == len(self.mapping['VM']):
             time.sleep(2)
             print("-----------")
             print(colored("\nAll Security groups added.", 'green', attrs=['bold']))
 
     def add_tags(self):
+        self.st_count = 0
         vm_ids = self.get_vm_ids()
         count = 0
         print(colored("\nStarting to add security tags...", 'blue', attrs=['bold']))
@@ -171,9 +173,9 @@ class NsxClient:
             }
             response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
             if str(response.status_code) == "204":
-                count = count + 1
+                self.st_count = self.st_count + 1
                 print(f"Tags added to VM {self.mapping['VM'][x]}")
-        if count == len(self.mapping['VM']):
+        if self.st_count == len(self.mapping['VM']):
             time.sleep(2)
             print("-----------")
             print(colored("All Tags added.", 'green', attrs=['bold']))
@@ -223,6 +225,8 @@ def main():
         return exit_status
     # Security tag function
     nsx_client.add_tags()
+    print("\n-----------")
+    print(f"Security group added: {nsx_client.sg_count}\nSecurity tag added: {nsx_client.st_count}")
 
 
 if __name__ == '__main__':
