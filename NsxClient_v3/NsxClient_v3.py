@@ -36,10 +36,6 @@ CHECK_SG_EXIST = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
-init() # colors for prints (Mandatory!!)
-font = pyfiglet.Figlet(font='standard')
-welcome_message = font.renderText("Hello to NsxClient!!")
-print(welcome_message)
 
 class NsxClient:
 
@@ -200,6 +196,11 @@ def main():
     # Authorization function
     try:
         nsx_client.authorize(args.username, args.password)
+        # Welcome message
+        init()  # colors for prints (Mandatory!!)
+        font = pyfiglet.Figlet(font='standard')
+        welcome_message = font.renderText("Hello to NsxClient!!")
+        print(welcome_message)
     except requests.exceptions.ConnectionError:
         print(colored("You have a connection error to NSX-T manager,"
                       " please validate you details and try again", 'red', attrs=['bold']))
@@ -210,7 +211,7 @@ def main():
         exit_status = 1
         return exit_status
     except:
-        print(colored("Please enter the NSX Manager details, use --help for help", 'red', attrs=['bold']))
+        print("usage: NsxClient_v3.py [-i IP] [-u USERNAME] [-p PASSWORD] [-f PATH]")
         exit_status = 1
         return exit_status
     # Security group function
