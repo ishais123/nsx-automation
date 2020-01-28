@@ -192,9 +192,12 @@ def parse_args():
 
 
 def main():
+    # Get args
     args = parse_args()
+
     # Create NsxClient object
     nsx_client = NsxClient(args.ip)
+
     # Authorization function
     try:
         nsx_client.authorize(args.username, args.password)
@@ -203,6 +206,7 @@ def main():
         font = pyfiglet.Figlet(font='standard')
         welcome_message = font.renderText("Hello to NsxClient!!")
         print(welcome_message)
+
     except requests.exceptions.ConnectionError:
         print(colored("You have a connection error to NSX-T manager,"
                       " please validate you details and try again", 'red', attrs=['bold']))
@@ -216,6 +220,7 @@ def main():
         print("usage: NsxClient_v3.py [-i IP] [-u USERNAME] [-p PASSWORD] [-f PATH]")
         exit_status = 1
         return exit_status
+
     # Security group function
     try:
         nsx_client.add_security_group(args.filepath)
@@ -223,8 +228,11 @@ def main():
         print(colored("mapping file not found", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
+
     # Security tag function
     nsx_client.add_tags()
+
+    # Summery
     print("\n-----------")
     print(f"Security group added: {nsx_client.sg_count}\nSecurity tag added: {nsx_client.st_count}")
 
