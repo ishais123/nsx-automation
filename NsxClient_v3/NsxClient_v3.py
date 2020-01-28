@@ -96,7 +96,7 @@ class NsxClient:
         self.mapping = pandas.read_csv(filepath, sep=',')
         self.sg_count = 0
         count = 0
-        print(colored("Starting to add security groups...", 'blue', attrs=['bold']))
+        print(colored("Starting to add security groups...", 'green', attrs=['bold']))
         print("-----------")
         time.sleep(2)
         # REST API calls
@@ -156,7 +156,7 @@ class NsxClient:
         self.st_count = 0
         vm_ids = self.get_vm_ids()
         count = 0
-        print(colored("\nStarting to add security tags...", 'blue', attrs=['bold']))
+        print(colored("\nStarting to add security tags...", 'green', attrs=['bold']))
         print("-----------")
         time.sleep(2)
 
@@ -175,10 +175,10 @@ class NsxClient:
             if str(response.status_code) == "204":
                 self.st_count = self.st_count + 1
                 print(f"Tags added to VM {self.mapping['VM'][x]}")
-        if self.st_count == len(self.mapping['VM']):
-            time.sleep(2)
-            print("-----------")
-            print(colored("All Tags added.", 'green', attrs=['bold']))
+        # if self.st_count == len(self.mapping['VM']):
+        #     time.sleep(2)
+        #     print("-----------")
+        #     print(colored("All Tags added.", 'green', attrs=['bold']))
 
 
 def parse_args():
@@ -233,8 +233,11 @@ def main():
     nsx_client.add_tags()
 
     # Summery
-    print("\n-----------")
-    print(f"Security group added: {nsx_client.sg_count}\nSecurity tag added: {nsx_client.st_count}")
+    time.sleep(2)
+    print(colored("\nSUMMARY", 'green', attrs=['bold']))
+    print(colored("-----------", 'green', attrs=['bold']))
+    print(colored(f"Security group added: {nsx_client.sg_count}\n"
+                  f"Security tag added: {nsx_client.st_count}", 'green', attrs=['bold']))
 
 
 if __name__ == '__main__':
