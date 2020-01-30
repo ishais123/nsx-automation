@@ -24,11 +24,14 @@ from colorama import init
 from termcolor import colored
 import pyfiglet
 import os
+<<<<<<< HEAD
 from datetime import datetime
 import logging
 
 
 
+=======
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
@@ -41,6 +44,7 @@ CHECK_SG_EXIST = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
+<<<<<<< HEAD
 
 # Logging operation
 date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -48,6 +52,8 @@ log_file = open('nsx_log.txt', 'w')
 logging.basicConfig(filename='nsx_log.txt', level=logging.INFO)
 log_file.close()
 
+=======
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
 
 class NsxClient:
 
@@ -108,7 +114,10 @@ class NsxClient:
         self.mapping = pandas.read_csv(filepath, sep=',')
         self.sg_count = 0
         count = 0
+<<<<<<< HEAD
         logging.info(f"{date}: Starting to add security groups...")
+=======
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
         print(colored("Starting to add security groups...", 'green', attrs=['bold']))
         print("-----------")
         time.sleep(2)
@@ -159,8 +168,12 @@ class NsxClient:
                 else:
                     print(response.text)
             else:
+<<<<<<< HEAD
                 logging.warning(f"{date}: Security group {display_name} already exists")
                 print(colored(f"{date}: Security group {display_name} already exists", 'yellow', attrs=['bold']))
+=======
+                print(colored(f"Security group {display_name} already exists", 'yellow', attrs=['bold']))
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
                 continue
         if self.sg_count == len(self.mapping['VM']):
             time.sleep(2)
@@ -172,7 +185,10 @@ class NsxClient:
         self.st_count = 0
         vm_ids = self.get_vm_ids()
         count = 0
+<<<<<<< HEAD
         logging.info(f"{date}: Starting to add security tags...")
+=======
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
         print(colored("\nStarting to add security tags...", 'green', attrs=['bold']))
         print("-----------")
         time.sleep(2)
@@ -191,6 +207,7 @@ class NsxClient:
             response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
             if str(response.status_code) == "204":
                 self.st_count = self.st_count + 1
+<<<<<<< HEAD
                 logging.info(f"{date}: Tags added to VM {self.mapping['VM'][x]}")
                 print(f"{date}: Tags added to VM {self.mapping['VM'][x]}")
         if self.st_count == len(self.mapping['VM']):
@@ -198,6 +215,13 @@ class NsxClient:
             print("-----------")
             logging.info(f"{date}: All Tags added.")
             print(colored("All Tags added.", 'green', attrs=['bold']))
+=======
+                print(f"Tags added to VM {self.mapping['VM'][x]}")
+        # if self.st_count == len(self.mapping['VM']):
+        #     time.sleep(2)
+        #     print("-----------")
+        #     print(colored("All Tags added.", 'green', attrs=['bold']))
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
 
 
 def parse_args():
@@ -227,16 +251,22 @@ def main():
         print(welcome_message)
 
     except requests.exceptions.ConnectionError:
+<<<<<<< HEAD
         init()  # colors for prints (Mandatory!!)
         logging.error(f"{date}: You have a connection error to NSX-T manager,"
                       " please validate you details and try again")
+=======
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
         print(colored("You have a connection error to NSX-T manager,"
                       " please validate you details and try again", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
     except KeyError:
+<<<<<<< HEAD
         init()  # colors for prints (Mandatory!!)
         logging.error(f"{date}: Invalid user and password, Please try again.")
+=======
+>>>>>>> f758be073da8135055d2799862bfadc14bebb61a
         print(colored("Invalid user and password, Please try again.", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
