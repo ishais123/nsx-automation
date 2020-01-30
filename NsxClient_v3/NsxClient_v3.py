@@ -231,7 +231,6 @@ def main():
         print(welcome_message)
 
     except requests.exceptions.ConnectionError:
-
         init()  # colors for prints (Mandatory!!)
         logging.error(f"{date}: You have a connection error to NSX-T manager,"
                       " please validate you details and try again")
