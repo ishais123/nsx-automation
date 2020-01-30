@@ -197,12 +197,20 @@ def main():
     print(colored("\nPlease Enter the password of NSX-T Manager: ", 'yellow', attrs=['bold']))
     password = input()
     print("-----------")
+    nsx_client = NsxClient(ip)
     try:
-        nsx_client = NsxClient(ip)
         nsx_client.authorize(username, password)
     except requests.exceptions.ConnectionError:
         print(colored("You have a connection error to NSX-T manager,"
-                      " please validate you details and try again", 'red', attrs=['bold']))
+                          " please validate your details and try again", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
+    except KeyError:
+        print(colored("Invalid user and password, Please try again.", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
+    except:
+        print(colored("Please enter the NSX Manager details", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
     nsx_client.add_security_group()
