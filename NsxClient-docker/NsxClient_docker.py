@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # This Client receive CSV file (mapping.csv) and TXT file (vms.txt)
 # The files have to be in the same directory as the script.
 # Files should contain the tags and scopes information for the security group.
@@ -23,27 +21,20 @@ import pandas
 from colorama import init
 from termcolor import colored
 import pyfiglet
-import os
-from datetime import datetime
-import logging
 
 requests.packages.urllib3.disable_warnings()  # Ignore from requests module warnings
 
-# make this tool executable from anywhere
-project_dir = os.path.dirname(os.path.dirname(__file__))
-os.sys.path.append(project_dir)
+MAPPING_FILE = '/map/mapping.csv'
 
 ADD_GROUP_URI = "api/v1/ns-groups"
 CHECK_SG_EXIST = "api/v1/ns-groups"
 AUTHORIZATION_URI = "api/session/create"
 ADD_TAGS_URI = "api/v1/fabric/virtual-machines?action=update_tags"
 
-
-# Logging operation
-date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-log_file = open('nsx_log.txt', 'w')
-logging.basicConfig(filename='nsx_log.txt', level=logging.INFO)
-log_file.close()
+init() # colors for prints (Mandatory!!)
+font = pyfiglet.Figlet(font='standard')
+welcome_message = font.renderText("Hello to NsxClient!!")
+print(welcome_message)
 
 
 class NsxClient:
@@ -51,6 +42,10 @@ class NsxClient:
     def __init__(self, nsx_manager):
         self.session = requests.Session()
         self.nsx_manager = nsx_manager
+        try:
+            self.mapping = pandas.read_csv(MAPPING_FILE, sep=',')
+        except FileNotFoundError:
+            raise FileNotFoundError
 
     def authorize(self, username, password):
         self.username = username
@@ -101,12 +96,9 @@ class NsxClient:
         else:
             return False
 
-    def add_security_group(self, filepath):
-        self.mapping = pandas.read_csv(filepath, sep=',')
-        self.sg_count = 0
+    def add_security_group(self):
         count = 0
-        logging.info(f"{date}: Starting to add security groups...")
-        print(colored("Starting to add security groups...", 'green', attrs=['bold']))
+        print(colored("Starting to add security groups...", 'yellow', attrs=['bold']))
         print("-----------")
         time.sleep(2)
         # REST API calls
@@ -149,29 +141,23 @@ class NsxClient:
                 response = self.session.request("POST", url, data=json.dumps(payload), headers=self.headers, verify=False)
 
                 if str(response.status_code) == "201":
-                    self.sg_count = self.sg_count + 1
+                    count = count + 1
                     time.sleep(1)
-                    logging.info(f"{date}: Security group {display_name} added.")
-                    print(f"{date}: Security group {display_name} added.")
+                    print(f"Security group {display_name} added.")
                 else:
                     print(response.text)
             else:
-                logging.warning(f"{date}: Security group {display_name} already exists")
-                print(colored(f"{date}: Security group {display_name} already exists", 'yellow', attrs=['bold']))
-                print(colored(f"Security group {display_name} already exists", 'yellow', attrs=['bold']))
+                print(colored(f"Security group {display_name} already exists", 'red'))
                 continue
-        if self.sg_count == len(self.mapping['VM']):
+        if count == len(self.mapping['VM']):
             time.sleep(2)
             print("-----------")
-            logging.info(f"{date}: All Security groups added.")
-            print(colored(f"\n{date}: All Security groups added.", 'green', attrs=['bold']))
+            print(colored("\nAll Security groups added.", 'green', attrs=['bold']))
 
     def add_tags(self):
-        self.st_count = 0
         vm_ids = self.get_vm_ids()
         count = 0
-        logging.info(f"{date}: Starting to add security tags...")
-        print(colored("\nStarting to add security tags...", 'green', attrs=['bold']))
+        print(colored("\nStarting to add security tags...", 'yellow', attrs=['bold']))
         print("-----------")
         time.sleep(2)
 
@@ -188,86 +174,56 @@ class NsxClient:
             }
             response = self.session.request("POST", url, headers=self.headers, data=json.dumps(payload), verify=False)
             if str(response.status_code) == "204":
-                self.st_count = self.st_count + 1
-                logging.info(f"{date}: Tags added to VM {self.mapping['VM'][x]}")
-                print(f"{date}: Tags added to VM {self.mapping['VM'][x]}")
-        if self.st_count == len(self.mapping['VM']):
+                count = count + 1
+                print(f"Tags added to VM {self.mapping['VM'][x]}")
+        if count == len(self.mapping['VM']):
             time.sleep(2)
             print("-----------")
-            logging.info(f"{date}: All Tags added.")
             print(colored("All Tags added.", 'green', attrs=['bold']))
 
-            print(f"Tags added to VM {self.mapping['VM'][x]}")
-        # if self.st_count == len(self.mapping['VM']):
-        #     time.sleep(2)
-        #     print("-----------")
-        #     print(colored("All Tags added.", 'green', attrs=['bold']))
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Enter IP, Username and Password of NSX Node.')
-    parser.add_argument("-i", "--ip", help="IP address of the NSX Manager.")
-    parser.add_argument("-u", "--username", help="Username of the NSX Manager.")
-    parser.add_argument("-p", "--password", help="Passowrd of the NSX Manager.")
-    parser.add_argument("-f", "--filepath", help="mapping file path")
-    args = parser.parse_args()
-    return args
+#
+# def parse_args():
+#     parser = argparse.ArgumentParser(description='Enter IP, Username and Password of NSX Node.')
+#     parser.add_argument("-i", "--ip", help="IP address of the NSX Manager.")
+#     parser.add_argument("-u", "--username", help="Username of the NSX Manager.")
+#     parser.add_argument("-p", "--password", help="Passowrd of the NSX Manager.")
+#     args = parser.parse_args()
+#     return args
 
 
 def main():
-    # Get args
-    args = parse_args()
-
-    # Create NsxClient object
-    nsx_client = NsxClient(args.ip)
-
-    # Authorization function
+    print(colored("Please Enter the IP of NSX-T Manager: ", 'yellow', attrs=['bold']))
+    ip = input()
+    print(colored("\nPlease Enter the username of NSX-T Manager: ", 'yellow', attrs=['bold']))
+    username = input()
+    print(colored("\nPlease Enter the password of NSX-T Manager: ", 'yellow', attrs=['bold']))
+    password = input()
+    print("-----------")
     try:
-        nsx_client.authorize(args.username, args.password)
-        # Welcome message
-        init()  # colors for prints (Mandatory!!)
-        font = pyfiglet.Figlet(font='standard')
-        welcome_message = font.renderText("Hello to NsxClient!!")
-        print(welcome_message)
-
+        nsx_client = NsxClient(ip)
+    except FileNotFoundError:
+        print(colored("mapping file not found", 'red', attrs=['bold']))
+        exit_status = 1
+        return exit_status
+    try:
+        nsx_client.authorize(username, password)
     except requests.exceptions.ConnectionError:
-
-        init()  # colors for prints (Mandatory!!)
-        logging.error(f"{date}: You have a connection error to NSX-T manager,"
-                      " please validate you details and try again")
         print(colored("You have a connection error to NSX-T manager,"
-                      " please validate you details and try again", 'red', attrs=['bold']))
+                          " please validate you details and try again", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
     except KeyError:
-        init()  # colors for prints (Mandatory!!)
-        logging.error(f"{date}: Invalid user and password, Please try again.")
         print(colored("Invalid user and password, Please try again.", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
     except:
-        print("usage: NsxClient_v3.py [-i IP] [-u USERNAME] [-p PASSWORD] [-f PATH]")
+        print(colored("Please enter the NSX Manager details", 'red', attrs=['bold']))
         exit_status = 1
         return exit_status
-
-    # Security group function
-    try:
-        nsx_client.add_security_group(args.filepath)
-    except ValueError:
-        print(colored("mapping file not found", 'red', attrs=['bold']))
-        exit_status = 1
-        return exit_status
-
-    # Security tag function
+    nsx_client.add_security_group()
     nsx_client.add_tags()
-
-    # Summery
-    time.sleep(2)
-    print(colored("\nSUMMARY", 'green', attrs=['bold']))
-    print(colored("-----------", 'green', attrs=['bold']))
-    print(colored(f"Security group added: {nsx_client.sg_count}\n"
-                  f"Security tag added: {nsx_client.st_count}", 'green', attrs=['bold']))
 
 
 if __name__ == '__main__':
     main()
+
