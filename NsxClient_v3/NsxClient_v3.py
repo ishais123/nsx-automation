@@ -158,7 +158,6 @@ class NsxClient:
             else:
                 logging.warning(f"{date}: Security group {display_name} already exists")
                 print(colored(f"{date}: Security group {display_name} already exists", 'yellow', attrs=['bold']))
-                print(colored(f"Security group {display_name} already exists", 'yellow', attrs=['bold']))
                 continue
         if self.sg_count == len(self.mapping['VM']):
             time.sleep(2)
@@ -214,6 +213,14 @@ def parse_args():
     return args
 
 
+def errors_printer(message):
+    init()  # colors for prints (Mandatory!!)
+    logging.error(f"{date}: {message}")
+    print(colored(message, 'red', attrs=['bold']))
+    exit_status = 1
+    return exit_status
+
+
 def main():
     # Get args
     args = parse_args()
@@ -231,21 +238,14 @@ def main():
         print(welcome_message)
 
     except requests.exceptions.ConnectionError:
-        init()  # colors for prints (Mandatory!!)
-        logging.error(f"{date}: You have a connection error to NSX-T manager,"
-                      " please validate you details and try again")
-        print(colored("You have a connection error to NSX-T manager,"
-                      " please validate you details and try again", 'red', attrs=['bold']))
-        exit_status = 1
+        exit_status = errors_printer("You have a connection error to NSX-T manager,"
+                                     " please validate you details and try again")
         return exit_status
     except KeyError:
-        init()  # colors for prints (Mandatory!!)
-        logging.error(f"{date}: Invalid user and password, Please try again.")
-        print(colored("Invalid user and password, Please try again.", 'red', attrs=['bold']))
-        exit_status = 1
+        exit_status = errors_printer("Invalid user and password, Please try again.")
         return exit_status
     except:
-        print("usage: NsxClient_v3.py [-i IP] [-u USERNAME] [-p PASSWORD] [-f PATH]")
+        print("usage: NsxClient_v3.py -i [IP] -u [USERNAME] -p [PASSWORD] -f [PATH]")
         exit_status = 1
         return exit_status
 
@@ -253,8 +253,10 @@ def main():
     try:
         nsx_client.add_security_group(args.filepath)
     except ValueError:
-        print(colored("mapping file not found", 'red', attrs=['bold']))
-        exit_status = 1
+        exit_status = errors_printer("mapping file not found")
+        return exit_status
+    except AttributeError:
+        exit_status = errors_printer("mapping file not found")
         return exit_status
 
     # Security tag function
